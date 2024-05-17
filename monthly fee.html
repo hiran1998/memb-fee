@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Membership Fee Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label, input {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Check Membership Fee Status</h1>
+        <form id="feeForm">
+            <label for="regNo">Enter Registration Number:</label>
+            <input type="text" id="regNo" required>
+            <button type="submit">Check Status</button>
+        </form>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const sheetId = 'YOUR_SHEET_ID'; // Replace with your Google Sheet ID
+        const apiKey = 'YOUR_API_KEY'; // Replace with your Google Sheets API Key
+        const sheetName = 'Sheet1'; // Replace with your sheet name if different
+
+        document.getElementById('feeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const regNo = document.getElementById('regNo').value;
+            const statusDiv = document.getElementById('status');
+
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    const rows = data.values;
+                    let found = false;
+
+                    for (let i = 1; i < rows.length; i++) {
+                        if (rows[i][0] == regNo) {
+                            statusDiv.className = 'status success';
+                            statusDiv.textContent = `Name: ${rows[i][1]}, Registration No: ${regNo}, Status: ${rows[i][2]}`;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        statusDiv.className = 'status';
+                        statusDiv.textContent = 'Registration number not found or no due fees.';
+                    }
+
+                    statusDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    statusDiv.className = 'status';
+                    statusDiv.textContent = 'An error occurred while fetching data.';
+                    statusDiv.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
